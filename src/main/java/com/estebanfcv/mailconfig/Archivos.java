@@ -1,5 +1,6 @@
 package com.estebanfcv.mailconfig;
 
+import com.estebanfcv.util.Constantes;
 import com.estebanfcv.util.Plantillas;
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
@@ -19,9 +20,7 @@ import javax.swing.JOptionPane;
  */
 public class Archivos {
 
-    private final String nombreArchivoConfig = "config.properties";
-    private final String nombreArchivoEmails = "Email.txt";
-    private final String nombreCarpetaLogs = "Logs";
+
     private Properties propConfig;
     File jarDir;
 
@@ -46,7 +45,7 @@ public class Archivos {
     }
 
     private void crearCarpetaLogs() {
-        File carpeta = new File(jarDir, nombreCarpetaLogs);
+        File carpeta = new File(jarDir, Constantes.NOMBRE_CARPETA_LOGS);
         if (!carpeta.exists()) {
             JOptionPane.showMessageDialog(null, "La carpeta logs no existe, se creará en: "+carpeta.getAbsolutePath());
             carpeta.mkdir();
@@ -56,7 +55,7 @@ public class Archivos {
     private boolean encontrarArchivoProperties() {
         try {
             if (jarDir != null && jarDir.isDirectory()) {
-                File propFile = new File(jarDir, nombreArchivoConfig);
+                File propFile = new File(jarDir, Constantes.NOMBRE_ARCHIVO_CONF);
                 propConfig = new Properties();
                 propConfig.load(new BufferedReader(new FileReader(propFile.getAbsoluteFile())));
                 return true;
@@ -71,7 +70,7 @@ public class Archivos {
     private boolean encontrarArchivoCorreos() {
         try {
             if (jarDir != null && jarDir.isDirectory()) {
-                File emailFile = new File(jarDir, nombreArchivoEmails);
+                File emailFile = new File(jarDir, Constantes.NOMBRE_ARCHIVO_CORREO);
                 return emailFile.exists();
             }
         } catch (Exception e) {
@@ -87,7 +86,7 @@ public class Archivos {
         String texto = "";
         try {
             is = new ByteArrayInputStream(texto.getBytes());
-            File file = new File(jarDir, nombreArchivoEmails);
+            File file = new File(jarDir, Constantes.NOMBRE_ARCHIVO_CORREO);
             out = new FileOutputStream(file);
             byte buf[] = new byte[1024];
             int len;
@@ -121,7 +120,7 @@ public class Archivos {
         }
         try {
             is = new ByteArrayInputStream(texto.getBytes());
-            File file = new File(jarDir, nombreArchivoConfig);
+            File file = new File(jarDir, Constantes.NOMBRE_ARCHIVO_CONF);
             out = new FileOutputStream(file);
             byte buf[] = new byte[1024];
             int len;
