@@ -11,6 +11,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.List;
 import java.util.Properties;
+import javax.swing.JOptionPane;
 
 /**
  *
@@ -18,8 +19,9 @@ import java.util.Properties;
  */
 public class Archivos {
 
-    private String nombreArchivoConfig = "config.properties";
-    private String nombreArchivoEmails = "Email.txt";
+    private final String nombreArchivoConfig = "config.properties";
+    private final String nombreArchivoEmails = "Email.txt";
+    private final String nombreCarpetaLogs = "Logs";
     private Properties propConfig;
     File jarDir;
 
@@ -29,6 +31,7 @@ public class Archivos {
     public boolean validarArchivos() {
         try {
             jarDir = new File(MailConfig.class.getProtectionDomain().getCodeSource().getLocation().toURI().getPath()).getParentFile();
+            crearCarpetaLogs();
             if (!encontrarArchivoProperties()) {
                 crearArchivoProperties();
             }
@@ -40,6 +43,14 @@ public class Archivos {
             e.printStackTrace();
         }
         return false;
+    }
+
+    private void crearCarpetaLogs() {
+        File carpeta = new File(jarDir, nombreCarpetaLogs);
+        if (!carpeta.exists()) {
+            JOptionPane.showMessageDialog(null, "La carpeta logs no existe, se creará en: "+carpeta.getAbsolutePath());
+            carpeta.mkdir();
+        }
     }
 
     private boolean encontrarArchivoProperties() {
@@ -83,7 +94,7 @@ public class Archivos {
             while ((len = is.read(buf)) > 0) {
                 out.write(buf, 0, len);
             }
-            System.out.println("el archivo se creo correctamente");
+            JOptionPane.showMessageDialog(null, "El archivo de correos no existe, se creará en: "+file.getAbsolutePath());
         } catch (Exception e) {
             e.printStackTrace();
         } finally {
@@ -117,7 +128,7 @@ public class Archivos {
             while ((len = is.read(buf)) > 0) {
                 out.write(buf, 0, len);
             }
-            System.out.println("el archivo se creo correctamente");
+            JOptionPane.showMessageDialog(null, "El archivo de configuración no existe, se creará en: "+file.getAbsolutePath());
         } catch (Exception e) {
             e.printStackTrace();
         } finally {
