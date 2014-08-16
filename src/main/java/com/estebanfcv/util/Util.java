@@ -1,15 +1,21 @@
 package com.estebanfcv.util;
 
 import com.estebanfcv.mailconfig.MailConfig;
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileReader;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  *
  * @author esteb_000
  */
 public class Util {
-    
-    public static File obtenerRutaJar(){
+
+    public static File obtenerRutaJar() {
         File f = null;
         try {
             f = new File(MailConfig.class.getProtectionDomain().getCodeSource().getLocation().toURI().getPath()).getParentFile();
@@ -18,5 +24,30 @@ public class Util {
         }
         return f;
     }
+
+    public static void cerrarLecturaEscritura(FileReader fr, BufferedReader br, OutputStream out, InputStream is) {
+        try {
+            if (out != null) {
+                out.close();
+            }
+            if (is != null) {
+                is.close();
+            }
+            if (br != null) {
+                br.close();
+            }
+            if (fr != null) {
+                fr.close();
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
     
+    public static boolean validarEmail(String email) {
+        Pattern pattern;
+        pattern = Pattern.compile("^[_A-Za-z0-9-\\+]+(\\.[_A-Za-z0-9-]+)*@[A-Za-z0-9-]+(\\.[A-Za-z0-9]+)*(\\.[A-Za-z]{2,})$");
+        Matcher matcher = pattern.matcher(email);
+        return matcher.matches();
+    }
 }

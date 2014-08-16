@@ -1,5 +1,6 @@
 package com.estebanfcv.mailconfig;
 
+import com.estebanfcv.util.AESCrypt;
 import com.estebanfcv.util.Constantes;
 import com.estebanfcv.util.Util;
 import java.io.BufferedReader;
@@ -11,12 +12,15 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.StringTokenizer;
 import javax.swing.JOptionPane;
+import static com.estebanfcv.util.Util.cerrarLecturaEscritura;
 
 /**
  *
  * @author esteb_000
  */
 public class MenuPrincipal {
+    
+    AESCrypt aes;
 
     public MenuPrincipal() {
         abrirMenuPrincipal();
@@ -43,6 +47,7 @@ public class MenuPrincipal {
                     menuCorreo();
                     break;
                 case 3:
+                    JOptionPane.showMessageDialog(null, "Adios");
                     System.exit(0);
                 default:
                     JOptionPane.showMessageDialog(null, "Valor incorrecto");
@@ -104,8 +109,8 @@ public class MenuPrincipal {
     }
 
     private void editarArchivoConfiguracion(Integer renglon, String nombreParametro) {
-        String parametro = JOptionPane.showInputDialog("Escriba el parametro para: " + nombreParametro).trim();
-        if (parametro == null || parametro.isEmpty()) {
+        String parametro = JOptionPane.showInputDialog("Escriba el parametro para: " + nombreParametro);
+        if (parametro == null || parametro.trim().isEmpty()) {
             JOptionPane.showMessageDialog(null, "Escriba el valor del parametro");
             return;
         }
@@ -143,22 +148,7 @@ public class MenuPrincipal {
         } catch (Exception e) {
             e.printStackTrace();
         } finally {
-            try {
-                if (out != null) {
-                    out.close();
-                }
-                if (is != null) {
-                    is.close();
-                }
-                if (fr != null) {
-                    fr.close();
-                }
-                if (br != null) {
-                    br.close();
-                }
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
+            cerrarLecturaEscritura(fr, br, out, is);
         }
     }
 
@@ -169,26 +159,19 @@ public class MenuPrincipal {
         String texto = "";
         String lineaActual;
         try {
+            aes=new AESCrypt(true, "123");
             config = new File(Util.obtenerRutaJar(), Constantes.NOMBRE_ARCHIVO_CONF);
-            fr = new FileReader(config);
-            br = new BufferedReader(fr);
-            while ((lineaActual = br.readLine()) != null) {
-                texto += lineaActual + "\n";
-            }
-            JOptionPane.showMessageDialog(null, texto);
+            aes.decrypt(config);
+//            fr = new FileReader(config);
+//            br = new BufferedReader(fr);
+//            while ((lineaActual = br.readLine()) != null) {
+//                texto += lineaActual + "\n";
+//            }
+            JOptionPane.showMessageDialog(null, aes.decrypt(config));
         } catch (Exception e) {
             e.printStackTrace();
         } finally {
-            try {
-                if (fr != null) {
-                    fr.close();
-                }
-                if (br != null) {
-                    br.close();
-                }
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
+            cerrarLecturaEscritura(fr, br, null, null);
         }
     }
 
@@ -206,7 +189,6 @@ public class MenuPrincipal {
                 JOptionPane.showMessageDialog(null, "Valor incorrecto");
                 continue;
             }
-
             switch (opcion) {
                 case 1:
                     agregarCorreo();
@@ -222,17 +204,26 @@ public class MenuPrincipal {
                 default:
                     JOptionPane.showMessageDialog(null, "Valor incorrecto");
             }
-
         } while (opcion != 4);
     }
 
     private void agregarCorreo() {
-        String email = JOptionPane.showInputDialog("Escriba el correo").trim();
-        if (email == null || email.isEmpty()) {
+        String email = JOptionPane.showInputDialog("Escriba el correo");
+        if (email == null || email.trim().isEmpty()) {
             JOptionPane.showMessageDialog(null, "Escriba una cuenta de correo");
             return;
+        } else {
+            if (!Util.validarEmail(email)) {
+                JOptionPane.showMessageDialog(null, "No es una cuenta de correo Valida");
+                return;
+            }
         }
-        String permisoEliminar = "0";
+        Integer permisoEliminar = JOptionPane.showConfirmDialog(null, "¿Tendra permiso de eliminar?", "Elija",
+                JOptionPane.YES_NO_OPTION);
+        if (permisoEliminar == -1) {
+            return;
+        }
+        permisoEliminar = permisoEliminar == 0 ? 1 : 0;
         File correo;
         FileReader fr = null;
         BufferedReader br = null;
@@ -263,22 +254,7 @@ public class MenuPrincipal {
         } catch (Exception e) {
             e.printStackTrace();
         } finally {
-            try {
-                if (out != null) {
-                    out.close();
-                }
-                if (is != null) {
-                    is.close();
-                }
-                if (fr != null) {
-                    fr.close();
-                }
-                if (br != null) {
-                    br.close();
-                }
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
+            cerrarLecturaEscritura(fr, br, out, is);
         }
     }
 
@@ -289,11 +265,26 @@ public class MenuPrincipal {
             return;
         }
         String correo = JOptionPane.showInputDialog("Escriba un correo para modificarlo \n" + contenido);
-        String permisoEliminar = "1";
-        if (correo == null || correo.isEmpty() || !contenidoCorreo().contains(correo)) {
-            JOptionPane.showMessageDialog(null, "Correo no encontrado");
+        if (correo == null || correo.isEmpty()) {
+            JOptionPane.showMessageDialog(null, "Escriba una cuenta de correo");
+            return;
+        } else {
+            if (!Util.validarEmail(correo)) {
+                JOptionPane.showMessageDialog(null, "No es una cuenta de correo Valida");
+                return;
+            } else {
+                if (!contenidoCorreo().contains(correo)) {
+                    JOptionPane.showMessageDialog(null, "Correo no encontrado");
+                    return;
+                }
+            }
+        }
+        String permisoEliminar = String.valueOf(JOptionPane.showConfirmDialog(null, "¿Tendra permiso de eliminar?", "Elija",
+                JOptionPane.YES_NO_OPTION));
+        if (permisoEliminar.equals("-1")) {
             return;
         }
+        permisoEliminar = permisoEliminar.equals("0") ? "1" : "0";
         File email;
         FileReader fr = null;
         BufferedReader br = null;
@@ -320,26 +311,10 @@ public class MenuPrincipal {
                 out.write(buf, 0, len);
             }
             JOptionPane.showMessageDialog(null, "El correo se modifico con exito");
-
         } catch (Exception e) {
             e.printStackTrace();
         } finally {
-            try {
-                if (out != null) {
-                    out.close();
-                }
-                if (is != null) {
-                    is.close();
-                }
-                if (fr != null) {
-                    fr.close();
-                }
-                if (br != null) {
-                    br.close();
-                }
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
+            cerrarLecturaEscritura(fr, br, out, is);
         }
     }
 
@@ -350,10 +325,19 @@ public class MenuPrincipal {
             return;
         }
         String correo = JOptionPane.showInputDialog("Escriba un correo para eliminarlo \n" + contenido);
-        JOptionPane.showMessageDialog(null, "Correo vale "+correo);
-        if (correo == null || correo.isEmpty() || !contenidoCorreo().contains(correo)) {
-            JOptionPane.showMessageDialog(null, "Correo no encontrado");
+        if (correo == null || correo.isEmpty()) {
+            JOptionPane.showMessageDialog(null, "Escriba una cuenta de correo");
             return;
+        } else {
+            if (!Util.validarEmail(correo)) {
+                JOptionPane.showMessageDialog(null, "No es una cuenta de correo Valida");
+                return;
+            } else {
+                if (!contenidoCorreo().contains(correo)) {
+                    JOptionPane.showMessageDialog(null, "Correo no encontrado");
+                    return;
+                }
+            }
         }
         File email;
         FileReader fr = null;
@@ -383,22 +367,7 @@ public class MenuPrincipal {
         } catch (Exception e) {
             e.printStackTrace();
         } finally {
-            try {
-                if (out != null) {
-                    out.close();
-                }
-                if (is != null) {
-                    is.close();
-                }
-                if (fr != null) {
-                    fr.close();
-                }
-                if (br != null) {
-                    br.close();
-                }
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
+            cerrarLecturaEscritura(fr, br, out, is);
         }
     }
 
@@ -418,16 +387,7 @@ public class MenuPrincipal {
         } catch (Exception e) {
             e.printStackTrace();
         } finally {
-            try {
-                if (fr != null) {
-                    fr.close();
-                }
-                if (br != null) {
-                    br.close();
-                }
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
+            cerrarLecturaEscritura(fr, br, null, null);
         }
         return texto;
     }
