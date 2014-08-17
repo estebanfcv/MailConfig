@@ -1,14 +1,10 @@
 package com.estebanfcv.util;
 
 import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
-import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
-import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -20,7 +16,6 @@ import java.security.MessageDigest;
 import java.security.SecureRandom;
 import java.util.Arrays;
 import java.util.Enumeration;
-
 import javax.crypto.Cipher;
 import javax.crypto.Mac;
 import javax.crypto.spec.IvParameterSpec;
@@ -260,7 +255,7 @@ public class AESCrypt {
      * @throws GeneralSecurityException if the platform does not support the
      * required cryptographic methods.
      */
-    public void encrypt(int version, String fromPath, File toPath)
+    public void encriptar(int version, String fromPath, File toPath)
             throws IOException, GeneralSecurityException {
         InputStream in = null;
         OutputStream out = null;
@@ -274,12 +269,10 @@ public class AESCrypt {
             debug("AES1: ", aesKey1.getEncoded());
             debug("IV2: ", ivSpec2.getIV());
             debug("AES2: ", aesKey2.getEncoded());
-
             in = new ByteArrayInputStream(fromPath.getBytes());
             debug("Abierto para la lectura: " + fromPath);
             out = new FileOutputStream(toPath);
             debug("Abierto para la escritura: " + toPath.getAbsolutePath());
-
             out.write("AES".getBytes("UTF-8"));	// Heading.
             out.write(version);	// Version.
             out.write(0);	// Reserved.
@@ -288,19 +281,16 @@ public class AESCrypt {
                 out.write(0);
             }
             out.write(ivSpec1.getIV());	// Initialization Vector.
-
             text = new byte[BLOCK_SIZE + KEY_SIZE];
             cipher.init(Cipher.ENCRYPT_MODE, aesKey1, ivSpec1);
             cipher.update(ivSpec2.getIV(), 0, BLOCK_SIZE, text);
             cipher.doFinal(aesKey2.getEncoded(), 0, KEY_SIZE, text, BLOCK_SIZE);
             out.write(text);	// Crypted IV and key.
             debug("IV2 + AES2 ciphertext: ", text);
-
             hmac.init(new SecretKeySpec(aesKey1.getEncoded(), HMAC_ALG));
             text = hmac.doFinal(text);
             out.write(text);	// HMAC from previous cyphertext.
             debug("HMAC1: ", text);
-
             cipher.init(Cipher.ENCRYPT_MODE, aesKey2, ivSpec2);
             hmac.init(new SecretKeySpec(aesKey2.getEncoded(), HMAC_ALG));
             text = new byte[BLOCK_SIZE];
@@ -314,19 +304,13 @@ public class AESCrypt {
             last &= 0x0f;
             out.write(last);	// Last block size mod 16.
             debug("Último bloque de tamaño mod 16: " + last);
-
             text = hmac.doFinal();
             out.write(text);	// HMAC from previous cyphertext.
             debug("HMAC2: ", text);
         } catch (InvalidKeyException e) {
             throw new GeneralSecurityException(JCE_EXCEPTION_MESSAGE, e);
         } finally {
-            if (in != null) {
-                in.close();
-            }
-            if (out != null) {
-                out.close();
-            }
+            Util.cerrarLecturaEscritura(out, in);
         }
     }
 
@@ -341,34 +325,28 @@ public class AESCrypt {
      * @throws GeneralSecurityException if the platform does not support the
      * required cryptographic methods.
      */
-    public String decrypt(File fromPath)
+    public String desencriptar(File fromPath)
             throws IOException, GeneralSecurityException {
         String texto = "";
         InputStream in = null;
-        OutputStream out = null;
-        FileReader fr = null;
-        BufferedReader br = null;
         try {
             in = new BufferedInputStream(new FileInputStream(fromPath));
             debug("Opened for reading: " + fromPath);
-            out = new BufferedOutputStream(new FileOutputStream("/home/estebanfcv/hola.txt"));
-
-            decrypt(fromPath.length(), in, out);
+            texto = decrypt(fromPath.length(), in);
+        } catch (Exception e) {
+            e.printStackTrace();
         } finally {
-            if (in != null) {
-                in.close();
-            }
-            if (out != null) {
-                out.close();
-            }
+            Util.cerrarLecturaEscritura(null, in);
         }
-        return texto;
+        return texto == null ? "" : texto;
     }
 
-    public void decrypt(long inSize, InputStream in, OutputStream out)
+    private String decrypt(long inSize, InputStream in)
             throws IOException, GeneralSecurityException {
+        String texto = "";
         try {
-            byte[] text = null, backup = null;
+            byte[] text, backup;
+
             long total = 3 + 1 + 1 + BLOCK_SIZE + BLOCK_SIZE + KEY_SIZE + SHA_SIZE + 1 + SHA_SIZE;
             int version;
             text = new byte[3];
@@ -442,18 +420,19 @@ public class AESCrypt {
                     debug("Last block size mod 16: " + last);
                     len = (last > 0 ? last : BLOCK_SIZE);
                 }
-                out.write(text, 0, len);
+                texto += new String(text, 0, len);
             }
             backup = hmac.doFinal();
             text = new byte[SHA_SIZE];
             readBytes(in, text);
             if (!Arrays.equals(backup, text)) {
-                
                 throw new IOException("Message has been altered or password incorrect");
             }
             debug("HMAC2: ", text);
         } catch (InvalidKeyException e) {
+            e.printStackTrace();
             throw new GeneralSecurityException(JCE_EXCEPTION_MESSAGE, e);
         }
+        return texto == null ? "" : texto;
     }
 }

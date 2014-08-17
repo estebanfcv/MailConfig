@@ -25,19 +25,13 @@ public class Util {
         return f;
     }
 
-    public static void cerrarLecturaEscritura(FileReader fr, BufferedReader br, OutputStream out, InputStream is) {
+    public static void cerrarLecturaEscritura( OutputStream out, InputStream is) {
         try {
             if (out != null) {
                 out.close();
             }
             if (is != null) {
                 is.close();
-            }
-            if (br != null) {
-                br.close();
-            }
-            if (fr != null) {
-                fr.close();
             }
         } catch (Exception e) {
             e.printStackTrace();

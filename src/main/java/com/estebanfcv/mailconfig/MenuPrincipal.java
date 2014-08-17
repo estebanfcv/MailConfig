@@ -3,23 +3,16 @@ package com.estebanfcv.mailconfig;
 import com.estebanfcv.util.AESCrypt;
 import com.estebanfcv.util.Constantes;
 import com.estebanfcv.util.Util;
-import java.io.BufferedReader;
-import java.io.ByteArrayInputStream;
 import java.io.File;
-import java.io.FileOutputStream;
-import java.io.FileReader;
-import java.io.InputStream;
-import java.io.OutputStream;
 import java.util.StringTokenizer;
 import javax.swing.JOptionPane;
-import static com.estebanfcv.util.Util.cerrarLecturaEscritura;
 
 /**
  *
  * @author esteb_000
  */
 public class MenuPrincipal {
-    
+
     AESCrypt aes;
 
     public MenuPrincipal() {
@@ -31,12 +24,13 @@ public class MenuPrincipal {
         Integer opcion = null;
         do {
             try {
-                opcion = Integer.parseInt(JOptionPane.showInputDialog("Seleccione una opcion:\n"
-                        + "[1] Editar Archivo Configuracion  \n"
+                aes = new AESCrypt(true, "123");
+                opcion = Integer.parseInt(JOptionPane.showInputDialog(null, "Seleccione una opción:\n"
+                        + "[1] Editar Archivo Configuración  \n"
                         + "[2] Editar Archivo de Correos  \n"
-                        + "[3] Salir"));
+                        + "[3] Salir", "MailConfig", JOptionPane.INFORMATION_MESSAGE));
             } catch (Exception e) {
-                JOptionPane.showMessageDialog(null, "Valor incorrecto");
+                JOptionPane.showMessageDialog(null, "Valor incorrecto", "MailConfig", JOptionPane.WARNING_MESSAGE);
                 continue;
             }
             switch (opcion) {
@@ -47,10 +41,10 @@ public class MenuPrincipal {
                     menuCorreo();
                     break;
                 case 3:
-                    JOptionPane.showMessageDialog(null, "Adios");
+                    JOptionPane.showMessageDialog(null, "Bye", "MailConfig", JOptionPane.INFORMATION_MESSAGE);
                     System.exit(0);
                 default:
-                    JOptionPane.showMessageDialog(null, "Valor incorrecto");
+                    JOptionPane.showMessageDialog(null, "Valor incorrecto", "MailConfig", JOptionPane.WARNING_MESSAGE);
             }
 
         } while (opcion != 3);
@@ -60,18 +54,18 @@ public class MenuPrincipal {
         Integer opcion = null;
         do {
             try {
-                opcion = Integer.parseInt(JOptionPane.showInputDialog("Seleccione una opcion:\n"
-                        + "[1] Email Principal  \n"
-                        + "[2] PASSWORD  \n"
+                opcion = Integer.parseInt(JOptionPane.showInputDialog(null, "Seleccione una opción:\n"
+                        + "[1] CORREO PRINCIPAL  \n"
+                        + "[2] CONTRASEÑA  \n"
                         + "[3] SERVIDOR  \n"
                         + "[4] PUERTO  \n"
                         + "[5] TLS  \n"
                         + "[6] TIEMPO_ESPERA_HILO  \n"
                         + "[7] TIEMPO_HISTORICO  \n"
                         + "[8] MOSTRA ARCHIVO  \n"
-                        + "[9] Regresar al menu anterior"));
+                        + "[9] Regresar al menú anterior", "MailConfig", JOptionPane.INFORMATION_MESSAGE));
             } catch (Exception e) {
-                JOptionPane.showMessageDialog(null, "Valor incorrecto");
+                JOptionPane.showMessageDialog(null, "Valor incorrecto", "MailConfig", JOptionPane.WARNING_MESSAGE);
                 continue;
             }
             switch (opcion) {
@@ -109,69 +103,44 @@ public class MenuPrincipal {
     }
 
     private void editarArchivoConfiguracion(Integer renglon, String nombreParametro) {
-        String parametro = JOptionPane.showInputDialog("Escriba el parametro para: " + nombreParametro);
+        String parametro = JOptionPane.showInputDialog(null, "Escriba el parametro para: " + nombreParametro,
+                "MailConfig", JOptionPane.INFORMATION_MESSAGE);
         if (parametro == null || parametro.trim().isEmpty()) {
-            JOptionPane.showMessageDialog(null, "Escriba el valor del parametro");
+            JOptionPane.showMessageDialog(null, "Escriba el valor del parametro", "MailConfig", JOptionPane.WARNING_MESSAGE);
             return;
         }
         File config;
-        FileReader fr = null;
-        BufferedReader br = null;
-        OutputStream out = null;
-        InputStream is = null;
-        String lineaActual;
         String texto = "";
         int contador = 1;
         try {
             config = new File(Util.obtenerRutaJar(), Constantes.NOMBRE_ARCHIVO_CONF);
-            fr = new FileReader(config);
-            br = new BufferedReader(fr);
-            while ((lineaActual = br.readLine()) != null) {
+            for (StringTokenizer tok = new StringTokenizer(aes.desencriptar(config), "\n"); tok.hasMoreTokens();) {
                 if (renglon == contador) {
-                    for (StringTokenizer tk = new StringTokenizer(lineaActual, "="); tk.hasMoreTokens();) {
+                    for (StringTokenizer tk = new StringTokenizer(tok.nextToken(), "="); tk.hasMoreTokens();) {
                         texto += tk.nextToken() + "=" + parametro + "\n";
                         break;
                     }
                 } else {
-                    texto += lineaActual + "\n";
+                    texto += tok.nextToken() + "\n";
                 }
                 contador++;
             }
-            is = new ByteArrayInputStream(texto.getBytes());
-            out = new FileOutputStream(config);
-            byte buf[] = new byte[1024];
-            int len;
-            while ((len = is.read(buf)) > 0) {
-                out.write(buf, 0, len);
-            }
-            JOptionPane.showMessageDialog(null, "El archivo se modifico con exito");
+            aes.encriptar(2, texto, config);
+
+            JOptionPane.showMessageDialog(null, "El archivo se modificó con éxito", "MailConfig", JOptionPane.INFORMATION_MESSAGE);
         } catch (Exception e) {
             e.printStackTrace();
-        } finally {
-            cerrarLecturaEscritura(fr, br, out, is);
         }
     }
 
     private void mostrarArchivoConfiguracion() {
         File config;
-        FileReader fr = null;
-        BufferedReader br = null;
-        String texto = "";
-        String lineaActual;
         try {
-            aes=new AESCrypt(true, "123");
             config = new File(Util.obtenerRutaJar(), Constantes.NOMBRE_ARCHIVO_CONF);
-            aes.decrypt(config);
-//            fr = new FileReader(config);
-//            br = new BufferedReader(fr);
-//            while ((lineaActual = br.readLine()) != null) {
-//                texto += lineaActual + "\n";
-//            }
-            JOptionPane.showMessageDialog(null, aes.decrypt(config));
+            aes.desencriptar(config);
+            JOptionPane.showMessageDialog(null, aes.desencriptar(config), "MailConfig", JOptionPane.INFORMATION_MESSAGE);
         } catch (Exception e) {
             e.printStackTrace();
-        } finally {
-            cerrarLecturaEscritura(fr, br, null, null);
         }
     }
 
@@ -180,13 +149,13 @@ public class MenuPrincipal {
         Integer opcion = null;
         do {
             try {
-                opcion = Integer.parseInt(JOptionPane.showInputDialog("Seleccione una opcion:\n"
+                opcion = Integer.parseInt(JOptionPane.showInputDialog(null, "Seleccione una opción:\n"
                         + "[1] Agregar correo  \n"
                         + "[2] Editar correo  \n"
                         + "[3] Eliminar correo  \n"
-                        + "[4] Regresar al menu principal  \n"));
+                        + "[4] Regresar al menú principal  \n", "MailConfig", JOptionPane.INFORMATION_MESSAGE));
             } catch (Exception e) {
-                JOptionPane.showMessageDialog(null, "Valor incorrecto");
+                JOptionPane.showMessageDialog(null, "Valor incorrecto", "MailConfig", JOptionPane.WARNING_MESSAGE);
                 continue;
             }
             switch (opcion) {
@@ -202,192 +171,138 @@ public class MenuPrincipal {
                 case 4:
                     return;
                 default:
-                    JOptionPane.showMessageDialog(null, "Valor incorrecto");
+                    JOptionPane.showMessageDialog(null, "Valor incorrecto", "MailConfig", JOptionPane.WARNING_MESSAGE);
             }
         } while (opcion != 4);
     }
 
     private void agregarCorreo() {
-        String email = JOptionPane.showInputDialog("Escriba el correo");
+        String email = JOptionPane.showInputDialog(null, "Escriba el correo", "MailConfig", JOptionPane.INFORMATION_MESSAGE);
         if (email == null || email.trim().isEmpty()) {
-            JOptionPane.showMessageDialog(null, "Escriba una cuenta de correo");
+            JOptionPane.showMessageDialog(null, "Escriba una cuenta de correo", "MailConfig", JOptionPane.WARNING_MESSAGE);
             return;
         } else {
             if (!Util.validarEmail(email)) {
-                JOptionPane.showMessageDialog(null, "No es una cuenta de correo Valida");
+                JOptionPane.showMessageDialog(null, "No es una cuenta de correo Valida", "MailConfig", JOptionPane.ERROR_MESSAGE);
                 return;
             }
         }
-        Integer permisoEliminar = JOptionPane.showConfirmDialog(null, "¿Tendra permiso de eliminar?", "Elija",
-                JOptionPane.YES_NO_OPTION);
+        Integer permisoEliminar = JOptionPane.showConfirmDialog(null, "¿Tendra permiso de eliminar?", "MailConfig",
+                JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
         if (permisoEliminar == -1) {
             return;
         }
         permisoEliminar = permisoEliminar == 0 ? 1 : 0;
         File correo;
-        FileReader fr = null;
-        BufferedReader br = null;
-        OutputStream out = null;
-        InputStream is = null;
-        String lineaActual;
-        String texto = "";
+        String texto;
         try {
             correo = new File(Util.obtenerRutaJar(), Constantes.NOMBRE_ARCHIVO_CORREO);
-            fr = new FileReader(correo);
-            br = new BufferedReader(fr);
-            while ((lineaActual = br.readLine()) != null) {
-                texto += lineaActual + "\n";
-            }
+            System.out.println("el file existe " + correo.exists());
+            texto = aes.desencriptar(correo);
             if (texto.contains(email)) {
-                JOptionPane.showMessageDialog(null, "El correo ya existe");
+                JOptionPane.showMessageDialog(null, "El correo ya existe", "MailConfig", JOptionPane.WARNING_MESSAGE);
                 return;
             }
             texto += email + ":" + permisoEliminar + "\n";
-            is = new ByteArrayInputStream(texto.getBytes());
-            out = new FileOutputStream(correo);
-            byte buf[] = new byte[1024];
-            int len;
-            while ((len = is.read(buf)) > 0) {
-                out.write(buf, 0, len);
-            }
-            JOptionPane.showMessageDialog(null, "El correo se agrego con exito");
+            aes.encriptar(2, texto, correo);
+            JOptionPane.showMessageDialog(null, "El correo se agregó con éxito", "MailConfig", JOptionPane.INFORMATION_MESSAGE);
         } catch (Exception e) {
             e.printStackTrace();
-        } finally {
-            cerrarLecturaEscritura(fr, br, out, is);
         }
     }
 
     private void modificarCorreo() {
         String contenido = contenidoCorreo().trim();
         if (contenido.isEmpty()) {
-            JOptionPane.showMessageDialog(null, "No hay correos");
+            JOptionPane.showMessageDialog(null, "No hay correos", "MailConfig", JOptionPane.WARNING_MESSAGE);
             return;
         }
-        String correo = JOptionPane.showInputDialog("Escriba un correo para modificarlo \n" + contenido);
+        String correo = JOptionPane.showInputDialog(null, "Escriba un correo para modificarlo \n" + contenido,
+                "MailConfig", JOptionPane.INFORMATION_MESSAGE);
         if (correo == null || correo.isEmpty()) {
-            JOptionPane.showMessageDialog(null, "Escriba una cuenta de correo");
+            JOptionPane.showMessageDialog(null, "Escriba una cuenta de correo","MailConfig",JOptionPane.WARNING_MESSAGE);
             return;
         } else {
             if (!Util.validarEmail(correo)) {
-                JOptionPane.showMessageDialog(null, "No es una cuenta de correo Valida");
+                JOptionPane.showMessageDialog(null, "No es una cuenta de correo Valida","MailConfig",JOptionPane.ERROR_MESSAGE);
                 return;
             } else {
                 if (!contenidoCorreo().contains(correo)) {
-                    JOptionPane.showMessageDialog(null, "Correo no encontrado");
+                    JOptionPane.showMessageDialog(null, "No se encontró el correo","MailConfig",JOptionPane.WARNING_MESSAGE);
                     return;
                 }
             }
         }
-        String permisoEliminar = String.valueOf(JOptionPane.showConfirmDialog(null, "¿Tendra permiso de eliminar?", "Elija",
-                JOptionPane.YES_NO_OPTION));
+        String permisoEliminar = String.valueOf(JOptionPane.showConfirmDialog(null, "¿Tendra permiso de eliminar?", "MailConfig",
+                JOptionPane.YES_NO_OPTION,JOptionPane.QUESTION_MESSAGE));
         if (permisoEliminar.equals("-1")) {
             return;
         }
         permisoEliminar = permisoEliminar.equals("0") ? "1" : "0";
         File email;
-        FileReader fr = null;
-        BufferedReader br = null;
-        OutputStream out = null;
-        InputStream is = null;
-        String lineaActual;
         String texto = "";
         try {
             email = new File(Util.obtenerRutaJar(), Constantes.NOMBRE_ARCHIVO_CORREO);
-            fr = new FileReader(email);
-            br = new BufferedReader(fr);
-            while ((lineaActual = br.readLine()) != null) {
-                if (lineaActual.contains(correo)) {
-                    texto += lineaActual.replace(lineaActual.charAt(lineaActual.length() - 1), permisoEliminar.charAt(0)) + "\n";
+            for (StringTokenizer t = new StringTokenizer(aes.desencriptar(email), "\n"); t.hasMoreTokens();) {
+                String token = t.nextToken();
+                if (token.contains(correo)) {
+                    texto += token.replace(token.charAt(token.length() - 1), permisoEliminar.charAt(0)) + "\n";
                 } else {
-                    texto += lineaActual + "\n";
+                    texto += token + "\n";
                 }
             }
-            is = new ByteArrayInputStream(texto.getBytes());
-            out = new FileOutputStream(email);
-            byte buf[] = new byte[1024];
-            int len;
-            while ((len = is.read(buf)) > 0) {
-                out.write(buf, 0, len);
-            }
-            JOptionPane.showMessageDialog(null, "El correo se modifico con exito");
+            aes.encriptar(2, texto, email);
+            JOptionPane.showMessageDialog(null, "El correo se modificó con éxito","MailConfig",JOptionPane.INFORMATION_MESSAGE);
         } catch (Exception e) {
             e.printStackTrace();
-        } finally {
-            cerrarLecturaEscritura(fr, br, out, is);
         }
     }
 
     private void eliminarCorreo() {
         String contenido = contenidoCorreo().trim();
         if (contenido.isEmpty()) {
-            JOptionPane.showMessageDialog(null, "No hay correos");
+            JOptionPane.showMessageDialog(null, "No hay correos","MailConfig",JOptionPane.INFORMATION_MESSAGE);
             return;
         }
-        String correo = JOptionPane.showInputDialog("Escriba un correo para eliminarlo \n" + contenido);
+        String correo = JOptionPane.showInputDialog(null,"Escriba un correo para eliminarlo \n" + contenido,
+                "MailConfig",JOptionPane.INFORMATION_MESSAGE);
         if (correo == null || correo.isEmpty()) {
-            JOptionPane.showMessageDialog(null, "Escriba una cuenta de correo");
+            JOptionPane.showMessageDialog(null, "Escriba una cuenta de correo","MailConfig",JOptionPane.WARNING_MESSAGE);
             return;
         } else {
             if (!Util.validarEmail(correo)) {
-                JOptionPane.showMessageDialog(null, "No es una cuenta de correo Valida");
+                JOptionPane.showMessageDialog(null, "No es una cuenta de correo válida","MailConfig",JOptionPane.ERROR_MESSAGE);
                 return;
             } else {
                 if (!contenidoCorreo().contains(correo)) {
-                    JOptionPane.showMessageDialog(null, "Correo no encontrado");
+                    JOptionPane.showMessageDialog(null, "No se encontró el correo","MailConfig",JOptionPane.WARNING_MESSAGE);
                     return;
                 }
             }
         }
         File email;
-        FileReader fr = null;
-        BufferedReader br = null;
-        OutputStream out = null;
-        InputStream is = null;
-        String lineaActual;
         String texto = "";
         try {
             email = new File(Util.obtenerRutaJar(), Constantes.NOMBRE_ARCHIVO_CORREO);
-            fr = new FileReader(email);
-            br = new BufferedReader(fr);
-            while ((lineaActual = br.readLine()) != null) {
-                if (lineaActual.contains(correo)) {
-                    continue;
-                }
-                texto += lineaActual + "\n";
+            for (StringTokenizer tk = new StringTokenizer(aes.desencriptar(email)); tk.hasMoreTokens();) {
+                String token = tk.nextToken();
+                texto += token.contains(correo) ? "" : token + "\n";
             }
-            is = new ByteArrayInputStream(texto.getBytes());
-            out = new FileOutputStream(email);
-            byte buf[] = new byte[1024];
-            int len;
-            while ((len = is.read(buf)) > 0) {
-                out.write(buf, 0, len);
-            }
-            JOptionPane.showMessageDialog(null, "El correo se elimino con exito");
+            aes.encriptar(2, texto, email);
+            JOptionPane.showMessageDialog(null, "El correo se eliminó con éxito","MailConfig",JOptionPane.INFORMATION_MESSAGE);
         } catch (Exception e) {
             e.printStackTrace();
-        } finally {
-            cerrarLecturaEscritura(fr, br, out, is);
         }
     }
 
     private String contenidoCorreo() {
         File correos;
-        FileReader fr = null;
-        BufferedReader br = null;
         String texto = "";
-        String lineaActual;
         try {
             correos = new File(Util.obtenerRutaJar(), Constantes.NOMBRE_ARCHIVO_CORREO);
-            fr = new FileReader(correos);
-            br = new BufferedReader(fr);
-            while ((lineaActual = br.readLine()) != null) {
-                texto += lineaActual + "\n";
-            }
+            texto = aes.desencriptar(correos);
         } catch (Exception e) {
             e.printStackTrace();
-        } finally {
-            cerrarLecturaEscritura(fr, br, null, null);
         }
         return texto;
     }
