@@ -239,7 +239,7 @@ public class AESCrypt {
      *
      * @throws UnsupportedEncodingException if UTF-16 encoding is not supported.
      */
-    public void setPassword(String password) throws UnsupportedEncodingException {
+    private void setPassword(String password) throws UnsupportedEncodingException {
         this.password = password.getBytes("UTF-16LE");
         debug("Password usado: ", this.password);
     }
@@ -255,7 +255,7 @@ public class AESCrypt {
      * @throws GeneralSecurityException if the platform does not support the
      * required cryptographic methods.
      */
-    public void encriptar(int version, String fromPath, File toPath)
+    public void encriptar(int version, String texto, File archivoDestino)
             throws IOException, GeneralSecurityException {
         InputStream in = null;
         OutputStream out = null;
@@ -269,10 +269,10 @@ public class AESCrypt {
             debug("AES1: ", aesKey1.getEncoded());
             debug("IV2: ", ivSpec2.getIV());
             debug("AES2: ", aesKey2.getEncoded());
-            in = new ByteArrayInputStream(fromPath.getBytes());
-            debug("Abierto para la lectura: " + fromPath);
-            out = new FileOutputStream(toPath);
-            debug("Abierto para la escritura: " + toPath.getAbsolutePath());
+            in = new ByteArrayInputStream(texto.getBytes());
+            debug("Abierto para la lectura: " + texto);
+            out = new FileOutputStream(archivoDestino);
+            debug("Abierto para la escritura: " + archivoDestino.getAbsolutePath());
             out.write("AES".getBytes("UTF-8"));	// Heading.
             out.write(version);	// Version.
             out.write(0);	// Reserved.
@@ -321,18 +321,20 @@ public class AESCrypt {
      *
      * Source file can be encrypted using version 1 or 2 of aescrypt.
      *
+     * @param archivoOrigen
+     * @return 
      * @throws IOException when there are I/O errors.
      * @throws GeneralSecurityException if the platform does not support the
      * required cryptographic methods.
      */
-    public String desencriptar(File fromPath)
+    public String desencriptar(File archivoOrigen)
             throws IOException, GeneralSecurityException {
         String texto = "";
         InputStream in = null;
         try {
-            in = new BufferedInputStream(new FileInputStream(fromPath));
-            debug("Opened for reading: " + fromPath);
-            texto = decrypt(fromPath.length(), in);
+            in = new BufferedInputStream(new FileInputStream(archivoOrigen));
+            debug("Opened for reading: " + archivoOrigen);
+            texto = decrypt(archivoOrigen.length(), in);
         } catch (Exception e) {
             e.printStackTrace();
         } finally {

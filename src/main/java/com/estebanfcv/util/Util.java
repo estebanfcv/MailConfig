@@ -1,9 +1,7 @@
 package com.estebanfcv.util;
 
 import com.estebanfcv.mailconfig.MailConfig;
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileReader;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.regex.Matcher;

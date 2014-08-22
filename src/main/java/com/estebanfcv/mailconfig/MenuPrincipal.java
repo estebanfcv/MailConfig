@@ -126,7 +126,6 @@ public class MenuPrincipal {
                 contador++;
             }
             aes.encriptar(2, texto, config);
-
             JOptionPane.showMessageDialog(null, "El archivo se modificó con éxito", "MailConfig", JOptionPane.INFORMATION_MESSAGE);
         } catch (Exception e) {
             e.printStackTrace();
@@ -137,7 +136,6 @@ public class MenuPrincipal {
         File config;
         try {
             config = new File(Util.obtenerRutaJar(), Constantes.NOMBRE_ARCHIVO_CONF);
-            aes.desencriptar(config);
             JOptionPane.showMessageDialog(null, aes.desencriptar(config), "MailConfig", JOptionPane.INFORMATION_MESSAGE);
         } catch (Exception e) {
             e.printStackTrace();
@@ -187,7 +185,7 @@ public class MenuPrincipal {
                 return;
             }
         }
-        Integer permisoEliminar = JOptionPane.showConfirmDialog(null, "¿Tendra permiso de eliminar?", "MailConfig",
+        Integer permisoEliminar = JOptionPane.showConfirmDialog(null, "¿Tendrá permiso de eliminar?", "MailConfig",
                 JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
         if (permisoEliminar == -1) {
             return;

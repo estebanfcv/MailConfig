@@ -4,7 +4,6 @@ import com.estebanfcv.util.AESCrypt;
 import com.estebanfcv.util.Constantes;
 import com.estebanfcv.util.Plantillas;
 import java.io.File;
-import java.util.List;
 import javax.swing.JOptionPane;
 import static com.estebanfcv.util.Util.obtenerRutaJar;
 
@@ -72,9 +71,8 @@ public class Archivos {
     }
 
     private void crearArchivoProperties() {
-        List<String> listaPropiedades = Plantillas.obtenerPlantillaConfig();
         String texto = "";
-        for (String s : listaPropiedades) {
+        for (String s : Plantillas.obtenerPlantillaConfig()) {
             texto += (s + "\n");
         }
         try {
