@@ -9,12 +9,12 @@ import static com.estebanfcv.util.Util.obtenerRutaJar;
 
 /**
  *
- * @author esteb_000
+ * @author estebanfcv
  */
 public class Archivos {
 
-    File jarDir;
-    AESCrypt aes;
+  private  File jarDir;
+   private  AESCrypt aes;
 
     public Archivos() {
     }
