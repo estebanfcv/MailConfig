@@ -337,6 +337,7 @@ public class AESCrypt {
             texto = decrypt(archivoOrigen.length(), in);
         } catch (Exception e) {
             e.printStackTrace();
+            Util.agregarDebug(e);
         } finally {
             Util.cerrarLecturaEscritura(null, in);
         }
@@ -435,6 +436,6 @@ public class AESCrypt {
             e.printStackTrace();
             throw new GeneralSecurityException(JCE_EXCEPTION_MESSAGE, e);
         }
-        return texto == null ? "" : texto;
+        return texto;
     }
 }

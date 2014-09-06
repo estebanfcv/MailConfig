@@ -128,7 +128,8 @@ public class MenuPrincipal {
             aes.encriptar(2, texto, config);
             JOptionPane.showMessageDialog(null, "El archivo se modificó con éxito", "MailConfig", JOptionPane.INFORMATION_MESSAGE);
         } catch (Exception e) {
-            e.printStackTrace();
+             e.printStackTrace();
+            Util.agregarDebug(e);
         }
     }
 
@@ -138,7 +139,8 @@ public class MenuPrincipal {
             config = new File(Util.obtenerRutaJar(), Constantes.NOMBRE_ARCHIVO_CONF);
             JOptionPane.showMessageDialog(null, aes.desencriptar(config), "MailConfig", JOptionPane.INFORMATION_MESSAGE);
         } catch (Exception e) {
-            e.printStackTrace();
+             e.printStackTrace();
+            Util.agregarDebug(e);
         }
     }
 
@@ -205,7 +207,8 @@ public class MenuPrincipal {
             aes.encriptar(2, texto, correo);
             JOptionPane.showMessageDialog(null, "El correo se agregó con éxito", "MailConfig", JOptionPane.INFORMATION_MESSAGE);
         } catch (Exception e) {
-            e.printStackTrace();
+            Util.agregarDebug(e);
+             e.printStackTrace();
         }
     }
 
@@ -218,21 +221,21 @@ public class MenuPrincipal {
         String correo = JOptionPane.showInputDialog(null, "Escriba un correo para modificarlo \n" + contenido,
                 "MailConfig", JOptionPane.INFORMATION_MESSAGE);
         if (correo == null || correo.isEmpty()) {
-            JOptionPane.showMessageDialog(null, "Escriba una cuenta de correo","MailConfig",JOptionPane.WARNING_MESSAGE);
+            JOptionPane.showMessageDialog(null, "Escriba una cuenta de correo", "MailConfig", JOptionPane.WARNING_MESSAGE);
             return;
         } else {
             if (!Util.validarEmail(correo)) {
-                JOptionPane.showMessageDialog(null, "No es una cuenta de correo Valida","MailConfig",JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showMessageDialog(null, "No es una cuenta de correo Valida", "MailConfig", JOptionPane.ERROR_MESSAGE);
                 return;
             } else {
                 if (!contenidoCorreo().contains(correo)) {
-                    JOptionPane.showMessageDialog(null, "No se encontró el correo","MailConfig",JOptionPane.WARNING_MESSAGE);
+                    JOptionPane.showMessageDialog(null, "No se encontró el correo", "MailConfig", JOptionPane.WARNING_MESSAGE);
                     return;
                 }
             }
         }
         String permisoEliminar = String.valueOf(JOptionPane.showConfirmDialog(null, "¿Tendra permiso de eliminar?", "MailConfig",
-                JOptionPane.YES_NO_OPTION,JOptionPane.QUESTION_MESSAGE));
+                JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE));
         if (permisoEliminar.equals("-1")) {
             return;
         }
@@ -250,30 +253,31 @@ public class MenuPrincipal {
                 }
             }
             aes.encriptar(2, texto, email);
-            JOptionPane.showMessageDialog(null, "El correo se modificó con éxito","MailConfig",JOptionPane.INFORMATION_MESSAGE);
+            JOptionPane.showMessageDialog(null, "El correo se modificó con éxito", "MailConfig", JOptionPane.INFORMATION_MESSAGE);
         } catch (Exception e) {
-            e.printStackTrace();
+            Util.agregarDebug(e);
+             e.printStackTrace();
         }
     }
 
     private void eliminarCorreo() {
         String contenido = contenidoCorreo().trim();
         if (contenido.isEmpty()) {
-            JOptionPane.showMessageDialog(null, "No hay correos","MailConfig",JOptionPane.INFORMATION_MESSAGE);
+            JOptionPane.showMessageDialog(null, "No hay correos", "MailConfig", JOptionPane.INFORMATION_MESSAGE);
             return;
         }
-        String correo = JOptionPane.showInputDialog(null,"Escriba un correo para eliminarlo \n" + contenido,
-                "MailConfig",JOptionPane.INFORMATION_MESSAGE);
+        String correo = JOptionPane.showInputDialog(null, "Escriba un correo para eliminarlo \n" + contenido,
+                "MailConfig", JOptionPane.INFORMATION_MESSAGE);
         if (correo == null || correo.isEmpty()) {
-            JOptionPane.showMessageDialog(null, "Escriba una cuenta de correo","MailConfig",JOptionPane.WARNING_MESSAGE);
+            JOptionPane.showMessageDialog(null, "Escriba una cuenta de correo", "MailConfig", JOptionPane.WARNING_MESSAGE);
             return;
         } else {
             if (!Util.validarEmail(correo)) {
-                JOptionPane.showMessageDialog(null, "No es una cuenta de correo válida","MailConfig",JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showMessageDialog(null, "No es una cuenta de correo válida", "MailConfig", JOptionPane.ERROR_MESSAGE);
                 return;
             } else {
                 if (!contenidoCorreo().contains(correo)) {
-                    JOptionPane.showMessageDialog(null, "No se encontró el correo","MailConfig",JOptionPane.WARNING_MESSAGE);
+                    JOptionPane.showMessageDialog(null, "No se encontró el correo", "MailConfig", JOptionPane.WARNING_MESSAGE);
                     return;
                 }
             }
@@ -287,8 +291,9 @@ public class MenuPrincipal {
                 texto += token.contains(correo) ? "" : token + "\n";
             }
             aes.encriptar(2, texto, email);
-            JOptionPane.showMessageDialog(null, "El correo se eliminó con éxito","MailConfig",JOptionPane.INFORMATION_MESSAGE);
+            JOptionPane.showMessageDialog(null, "El correo se eliminó con éxito", "MailConfig", JOptionPane.INFORMATION_MESSAGE);
         } catch (Exception e) {
+           Util.agregarDebug(e);
             e.printStackTrace();
         }
     }
@@ -301,6 +306,7 @@ public class MenuPrincipal {
             texto = aes.desencriptar(correos);
         } catch (Exception e) {
             e.printStackTrace();
+            Util.agregarDebug(e);
         }
         return texto;
     }
