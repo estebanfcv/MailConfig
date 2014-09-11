@@ -28,6 +28,7 @@ public class Archivos {
             jarDir = obtenerRutaJar();
             crearArchivoDebug();
             crearCarpetaLogs();
+            crearArchivoCorreosEnviados();
             if (!encontrarArchivoProperties()) {
                 crearArchivoProperties();
             }
@@ -116,13 +117,32 @@ public class Archivos {
         PrintWriter pw = null;
         File archivoDebug;
         try {
-            archivoDebug = new File(obtenerRutaJar(), Constantes.NOMBRE_DEBUG);
+            archivoDebug = new File(jarDir, Constantes.NOMBRE_DEBUG);
             if (!archivoDebug.exists()) {
                 JOptionPane.showMessageDialog(null, "El archivo debug no existe, se creará en: " + archivoDebug.getAbsolutePath(),
                         "MailConfig", JOptionPane.INFORMATION_MESSAGE);
                 fw = new FileWriter(archivoDebug);
                 pw = new PrintWriter(fw);
                 pw.append("====================================================DEBUG=====================================================================\n");
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            Util.cerrarLecturaEscritura(pw, fw);
+        }
+    }
+
+    private void crearArchivoCorreosEnviados() {
+        FileWriter fw = null;
+        PrintWriter pw = null;
+        File archivoEnviados;
+        try {
+            archivoEnviados = new File(jarDir, Constantes.NOMBRE_ENVIADOS);
+            if (!archivoEnviados.exists()) {
+                JOptionPane.showMessageDialog(null, "El archivo debug no existe, se creará en: " + archivoEnviados.getAbsolutePath(),
+                        "MailConfig", JOptionPane.INFORMATION_MESSAGE);
+                fw = new FileWriter(archivoEnviados);
+                pw = new PrintWriter(fw);
             }
         } catch (Exception e) {
             e.printStackTrace();
